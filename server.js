@@ -20,17 +20,17 @@ const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
       'https://shreehari-jewellers.netlify.app/'
     ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow server-to-server or Postman
-    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
-    return callback(new Error(`CORS policy does not allow origin: ${origin}`));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
+// app.use(cors({
+//   origin: function (origin, callback) {
+//     if (!origin) return callback(null, true); // allow server-to-server or Postman
+//     if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+//     return callback(new Error(`CORS policy does not allow origin: ${origin}`));
+//   },
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization']
+// }));
+app.use(cors()); 
 // Handle preflight requests
 app.options('*', cors());
 /* ----------------------------------------------------- */
