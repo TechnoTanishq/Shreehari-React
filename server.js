@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -11,38 +10,50 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS: allowed origins from env (comma separated). Includes localhost by default.
+/* -------------------- CORS CONFIG -------------------- */
+// ✅ Allowed origins: add your Netlify site here
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-  : ['http://localhost:5173', 'http://127.0.0.1:5500'];
+  : [
+      'http://localhost:5173', 
+      'http://127.0.0.1:5500',
+      'https://shreehari-jewellers.netlify.app/'
+    ];
 
 app.use(cors({
-  origin: function(origin, callback) {
-    // allow requests with no origin like Postman or server-to-server
-    if (!origin) return callback(null, true);
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // allow server-to-server or Postman
     if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
-    return callback(new Error('CORS policy does not allow this origin'), false);
+    return callback(new Error(`CORS policy does not allow origin: ${origin}`));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Handle preflight requests
+app.options('*', cors());
+/* ----------------------------------------------------- */
 
 // DB connect
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-.then(() => console.log('MongoDB Connected'))
-.catch(err => console.error('MongoDB Connection Error:', err));
+.then(() => console.log('✅ MongoDB Connected'))
+.catch(err => console.error('❌ MongoDB Connection Error:', err));
 
-// Routes (double-check /api/user -> auth if that's intended)
+// Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/cart', require('./routes/cart'));
-app.use('/api/user', require('./routes/auth')); // verify this is correct
+
+// ⚠️ Double check this: using auth routes for /api/user
+app.use('/api/user', require('./routes/auth')); 
+
 app.use('/api/products', require('./routes/products'));
 app.use('/admin', require('./routes/admin'));
 
-// Serve uploaded files (note: ephemeral on many hosts)
+// Serve uploaded files (note: ephemeral on Render)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const PORT = process.env.PORT || 5000;
